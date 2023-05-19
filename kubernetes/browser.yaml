@@ -74,3 +74,14 @@ spec:
             name: browser
             port:
               name: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: browser
+  namespace: buildbarn
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: browser

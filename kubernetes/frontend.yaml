@@ -56,3 +56,14 @@ spec:
   selector:
     app: frontend
   type: LoadBalancer
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend
+  namespace: buildbarn
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: frontend

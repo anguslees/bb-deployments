@@ -87,3 +87,14 @@ spec:
             name: scheduler
             port:
               name: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: scheduler
+  namespace: buildbarn
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: scheduler
