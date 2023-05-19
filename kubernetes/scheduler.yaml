@@ -23,6 +23,10 @@ spec:
         - /config/scheduler.jsonnet
         image: buildbarn/bb-scheduler:20230213T172655Z-e0ae60c
         name: scheduler
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
         ports:
         - containerPort: 8982
           protocol: TCP

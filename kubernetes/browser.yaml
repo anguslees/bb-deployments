@@ -21,6 +21,10 @@ spec:
         args:
         - /config/browser.jsonnet
         name: browser
+        resources:
+          requests:
+            cpu: 10m
+            memory: 512Mi
         ports:
         - containerPort: 7984
           protocol: TCP

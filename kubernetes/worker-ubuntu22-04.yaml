@@ -32,6 +32,10 @@ spec:
           readOnly: true
         - mountPath: /worker
           name: worker
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
         env:
         - name: NODE_NAME
           valueFrom:
@@ -47,6 +51,14 @@ spec:
         securityContext:
           runAsUser: 65534
           allowPrivilegeEscalation: false
+        resources:
+          requests:
+            # Wildy unpredictable. Under-guesstimate cpu, over-guess
+            # memory.  We ~want cpu to be best-effort and frequently
+            # throttled. We still want to avoid oom crashes however.
+            # TODO(gus): be able to spill into swap, rather than oom.
+            cpu: 1000m
+            memory: 3Gi
         volumeMounts:
         - mountPath: /config/
           name: configs

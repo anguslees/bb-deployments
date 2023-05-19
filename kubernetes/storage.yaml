@@ -22,6 +22,10 @@ spec:
         - /config/storage.jsonnet
         image: buildbarn/bb-storage:20230208T220714Z-fd356c8
         name: storage
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 1Gi
         ports:
         - containerPort: 8981
           protocol: TCP
