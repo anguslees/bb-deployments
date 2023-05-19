@@ -8,6 +8,11 @@ set -eEuo pipefail
 
 script_dir="$(dirname "${BASH_SOURCE[0]}")"
 
+realpath() {
+    cd "$1"
+    pwd
+}
+
 bazel_version=$(cat "${script_dir}/../../.bazelversion")
 fixture_dir="$(realpath "${script_dir}/extract-bazel-auto-toolchains-fixture")"
 output_dir="$1"
