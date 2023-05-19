@@ -13,6 +13,9 @@ spec:
       labels:
         app: frontend
     spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
       containers:
       - args:
         - /config/frontend.jsonnet

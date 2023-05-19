@@ -18,6 +18,9 @@ spec:
         app: worker
         instance: ubuntu22-04
     spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
       containers:
       - args:
         - /config/worker-ubuntu22-04.jsonnet

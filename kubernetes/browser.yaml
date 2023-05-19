@@ -13,6 +13,9 @@ spec:
       labels:
         app: browser
     spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
       containers:
       - image: buildbarn/bb-browser:20230208T101541Z-73a5362
         args:
