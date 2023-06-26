@@ -8,6 +8,7 @@ data:
       clientGrpcServers: [{
         listenAddresses: [':8982'],
         authenticationPolicy: { allow: {} },
+        healthCheckService: 'readiness',
       }],
       workerGrpcServers: [{
         listenAddresses: [':8983'],
