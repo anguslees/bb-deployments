@@ -9,6 +9,8 @@ data:
       grpcServers: [{
         listenPaths: ['/worker/runner'],
         authenticationPolicy: { allow: {} },
+        // FIXME: makes runner exit early?  Understand me.
+        //stopGracefully: true,
       }],
     }
 kind: ConfigMap

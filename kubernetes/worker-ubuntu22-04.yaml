@@ -20,6 +20,8 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
+      terminationGracePeriodSeconds: 300
+      automountServiceAccountToken: false
       containers:
       - args:
         - /config/worker-ubuntu22-04.jsonnet
@@ -61,7 +63,7 @@ spec:
             # throttled. We still want to avoid oom crashes however.
             # TODO(gus): be able to spill into swap, rather than oom.
             cpu: 1000m
-            memory: 3Gi
+            memory: 2Gi
         volumeMounts:
         - mountPath: /config/
           name: configs
