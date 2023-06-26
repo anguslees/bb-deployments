@@ -9,6 +9,7 @@ data:
       listenAddress: ':7984',
       global: common.global,
       authorizer: { allow: {} },
+      bbClientdInstanceNamePrefix: "burner",
     }
 kind: ConfigMap
 metadata:
