@@ -1,22 +1,25 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: storage
+  name: storage-0
   namespace: buildbarn
 spec:
   replicas: 2
   selector:
     matchLabels:
       app: storage
+      shard: "0"
   serviceName: storage
   template:
     metadata:
       labels:
         app: storage
+        shard: "0"
     spec:
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
+      automountServiceAccountToken: false
       containers:
       - args:
         - /config/storage.jsonnet
@@ -78,7 +81,96 @@ spec:
       - ReadWriteOnce
       resources:
         requests:
-          storage: 12Gi
+          storage: 70Gi
+  - metadata:
+      name: ac
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: storage-1
+  namespace: buildbarn
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: storage
+      shard: "1"
+  serviceName: storage
+  template:
+    metadata:
+      labels:
+        app: storage
+        shard: "1"
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
+      automountServiceAccountToken: false
+      containers:
+      - args:
+        - /config/storage.jsonnet
+        image: buildbarn/bb-storage:20230208T220714Z-fd356c8
+        name: storage
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 1Gi
+        ports:
+        - containerPort: 8981
+          protocol: TCP
+        - name: metrics
+          containerPort: 9980
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /config/
+          name: configs
+          readOnly: true
+        - mountPath: /storage-cas
+          name: cas
+        - mountPath: /storage-ac
+          name: ac
+      initContainers:
+      - name: volume-init
+        image: busybox:1.31.1-uclibc
+        command:
+        - sh
+        - -c
+        - mkdir -m 0700 -p /storage-cas/persistent_state /storage-ac/persistent_state
+        volumeMounts:
+        - mountPath: /storage-cas
+          name: cas
+        - mountPath: /storage-ac
+          name: ac
+      volumes:
+      - name: configs
+        projected:
+          sources:
+          - configMap:
+              name: storage
+              items:
+              - key: storage.jsonnet
+                path: storage.jsonnet
+          - configMap:
+              name: common
+              items:
+              - key: common.libsonnet
+                path: common.libsonnet
+  volumeClaimTemplates:
+  - metadata:
+      name: cas
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 70Gi
   - metadata:
       name: ac
     spec:
@@ -108,10 +200,23 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: storage
+  name: storage-0
   namespace: buildbarn
 spec:
   minAvailable: 1
   selector:
     matchLabels:
       app: storage
+      shard: "0"
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: storage-1
+  namespace: buildbarn
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: storage
+      shard: "1"
