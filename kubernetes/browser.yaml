@@ -4,7 +4,7 @@ metadata:
   name: browser
   namespace: buildbarn
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: browser
@@ -16,6 +16,7 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
+      automountServiceAccountToken: false
       containers:
       - image: buildbarn/bb-browser:20230208T101541Z-73a5362
         args:
@@ -64,24 +65,6 @@ spec:
     app: browser
   type: ClusterIP
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: browser
-  namespace: buildbarn
-spec:
-  rules:
-  - host: bb-browser.example.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: browser
-            port:
-              name: http
----
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
@@ -92,3 +75,33 @@ spec:
   selector:
     matchLabels:
       app: browser
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: browser
+  namespace: buildbarn
+  annotations:
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/auth-type: cognito
+    alb.ingress.kubernetes.io/auth-idp-cognito: __cognito_auth_idp__
+    alb.ingress.kubernetes.io/auth-on-unauthenticated-request: authenticate
+    alb.ingress.kubernetes.io/auth-scope: openid
+    alb.ingress.kubernetes.io/auth-session-timeout: "3600"
+    external-dns.alpha.kubernetes.io/hostname: bb-browser.%zone%
+spec:
+  rules:
+  - host: bb-browser.%zone%
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: browser
+            port:
+              name: http
+  tls:
+  - hosts:
+    - bb-browser.%zone%

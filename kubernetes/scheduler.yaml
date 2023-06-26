@@ -18,6 +18,7 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
+      automountServiceAccountToken: false
       containers:
       - args:
         - /config/scheduler.jsonnet
@@ -89,9 +90,18 @@ kind: Ingress
 metadata:
   name: scheduler
   namespace: buildbarn
+  annotations:
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/auth-idp-cognito: __cognito_auth_idp__
+    alb.ingress.kubernetes.io/auth-on-unauthenticated-request: authenticate
+    alb.ingress.kubernetes.io/auth-scope: openid
+    alb.ingress.kubernetes.io/auth-session-timeout: "3600"
+    alb.ingress.kubernetes.io/auth-type: cognito
+    external-dns.alpha.kubernetes.io/hostname: bb-scheduler.%zone%
 spec:
   rules:
-  - host: bb-scheduler.example.com
+  - host: bb-scheduler.%zone%
     http:
       paths:
       - path: /
@@ -101,6 +111,9 @@ spec:
             name: scheduler
             port:
               name: http
+  tls:
+  - hosts:
+    - bb-scheduler.%zone%
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
