@@ -1,0 +1,34 @@
+apiVersion: v1
+data:
+  remoteasset.jsonnet: |
+    local common = import 'common.libsonnet';
+
+    {
+      grpcServers: [{
+        listenAddresses: [':8981'],
+        authenticationPolicy: { allow: {} },
+        healthCheckService: 'readiness',
+      }],
+      fetcher: {
+        caching: {
+          fetcher: {
+            http: {
+              allowUpdatesForInstances: $.allowUpdatesForInstances,
+              contentAddressableStorage: common.blobstore.contentAddressableStorage,
+            },
+          },
+        },
+      },
+      assetCache: {
+        actionCache: {
+          blobstore: common.blobstore,
+        },
+      },
+      global: common.global,
+      allowUpdatesForInstances: ['burner'],
+      maximumMessageSizeBytes: 16 * 1024 * 1024 * 1024,
+    }
+kind: ConfigMap
+metadata:
+  name: remoteasset
+  namespace: buildbarn

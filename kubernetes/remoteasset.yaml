@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: remoteasset
+  namespace: buildbarn
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: remoteasset
+  template:
+    metadata:
+      labels:
+        app: remoteasset
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
+      automountServiceAccountToken: false
+      containers:
+      - args:
+        - /config/remoteasset.jsonnet
+        image: anguslees/bb-remote-asset:pr29-20230606
+        name: remoteasset
+        resources:
+          requests:
+            cpu: 100m
+            memory: 1Gi
+        ports:
+        - containerPort: 8981
+          protocol: TCP
+        - name: metrics
+          containerPort: 9980
+          protocol: TCP
+        readinessProbe:
+          grpc:
+            service: readiness
+            port: 8981
+        volumeMounts:
+        - mountPath: /config/
+          name: configs
+          readOnly: true
+      volumes:
+      - name: configs
+        projected:
+          sources:
+          - configMap:
+              name: remoteasset
+              items:
+              - key: remoteasset.jsonnet
+                path: remoteasset.jsonnet
+          - configMap:
+              name: common
+              items:
+              - key: common.libsonnet
+                path: common.libsonnet
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/port: "80"
+    prometheus.io/scrape: "true"
+  name: remoteasset
+  namespace: buildbarn
+spec:
+  ports:
+  - port: 8981
+    protocol: TCP
+    name: grpc
+  selector:
+    app: remoteasset
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: remoteasset
+  namespace: buildbarn
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: remoteasset
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/backend-protocol-version: GRPC
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    external-dns.alpha.kubernetes.io/hostname: remoteasset.%zone%
+  name: remoteasset
+  namespace: buildbarn
+spec:
+  rules:
+  - host: remoteasset.%zone%
+    http:
+      paths:
+      - backend:
+          service:
+            name: remoteasset
+            port:
+              name: grpc
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - remoteasset.%zone%
