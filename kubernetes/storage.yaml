@@ -37,6 +37,10 @@ spec:
           name: cas
         - mountPath: /storage-ac
           name: ac
+        readinessProbe:
+          grpc:
+            service: readiness
+            port: 8981
       initContainers:
       - name: volume-init
         image: busybox:1.31.1-uclibc

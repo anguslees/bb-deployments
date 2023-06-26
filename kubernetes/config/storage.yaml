@@ -7,6 +7,7 @@ data:
       grpcServers: [{
         listenAddresses: [':8981'],
         authenticationPolicy: { allow: {} },
+        healthCheckService: 'readiness',
       }],
       maximumMessageSizeBytes: common.maximumMessageSizeBytes,
       global: common.global,
