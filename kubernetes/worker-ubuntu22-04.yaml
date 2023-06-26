@@ -31,6 +31,10 @@ spec:
           readOnly: true
         - mountPath: /worker
           name: worker
+        ports:
+        - name: metrics
+          containerPort: 9980
+          protocol: TCP
         resources:
           requests:
             cpu: 100m
