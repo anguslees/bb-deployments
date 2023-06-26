@@ -24,15 +24,21 @@ data:
             keyLocationMapMaximumPutAttempts: 32,
             oldBlocks: 8,
             currentBlocks: 24,
-            newBlocks: 1,
+            newBlocks: 3,
             blocksOnBlockDevice: {
               source: {
+                //devicePath: '/storage-cas-device',
                 file: {
                   path: '/storage-cas/blocks',
-                  sizeBytes: 32 * 1024 * 1024 * 1024,
+                  sizeBytes: 64 * 1024 * 1024 * 1024,
                 },
               },
               spareBlocks: 3,
+              dataIntegrityValidationCache: {
+                cacheSize: 100000,
+                cacheDuration: '14400s',
+                cacheReplacementPolicy: 'LEAST_RECENTLY_USED',
+              },
             },
             persistent: {
               stateDirectoryPath: '/storage-cas/persistent_state',
@@ -66,6 +72,11 @@ data:
                 },
               },
               spareBlocks: 3,
+              dataIntegrityValidationCache: {
+                cacheSize: 100000,
+                cacheDuration: '14400s',
+                cacheReplacementPolicy: 'LEAST_RECENTLY_USED',
+              },
             },
             persistent: {
               stateDirectoryPath: '/storage-ac/persistent_state',
