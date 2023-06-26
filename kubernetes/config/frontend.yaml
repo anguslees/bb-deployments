@@ -7,6 +7,7 @@ data:
       grpcServers: [{
         listenAddresses: [':8980'],
         authenticationPolicy: { allow: {} },
+        healthCheckService: 'readiness',
       }],
       schedulers: {
         '': {
