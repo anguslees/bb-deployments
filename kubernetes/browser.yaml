@@ -29,6 +29,13 @@ spec:
         ports:
         - containerPort: 7984
           protocol: TCP
+        - name: metrics
+          containerPort: 9980
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 7984
         volumeMounts:
         - mountPath: /config/
           name: configs
