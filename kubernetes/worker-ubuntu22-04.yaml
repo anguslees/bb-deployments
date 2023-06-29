@@ -63,7 +63,7 @@ spec:
             # throttled. We still want to avoid oom crashes however.
             # TODO(gus): be able to spill into swap, rather than oom.
             cpu: 1000m
-            memory: 2Gi
+            memory: 3Gi
         volumeMounts:
         - mountPath: /config/
           name: configs
