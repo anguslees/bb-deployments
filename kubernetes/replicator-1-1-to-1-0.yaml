@@ -24,7 +24,7 @@ spec:
       containers:
       - args:
         - /config/replicator.jsonnet
-        image: buildbarn/bb-replicator:20230208T220714Z-fd356c8
+        image: ghcr.io/buildbarn/bb-replicator:20230629T193729Z-d6a051c
         name: replicator
         resources:
           requests:

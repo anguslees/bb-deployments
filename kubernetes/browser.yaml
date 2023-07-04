@@ -18,7 +18,7 @@ spec:
         kubernetes.io/arch: amd64
       automountServiceAccountToken: false
       containers:
-      - image: buildbarn/bb-browser:20230208T101541Z-73a5362
+      - image: ghcr.io/buildbarn/bb-browser:20230703T151441Z-ae419c7
         args:
         - /config/browser.jsonnet
         name: browser

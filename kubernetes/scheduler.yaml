@@ -22,7 +22,7 @@ spec:
       containers:
       - args:
         - /config/scheduler.jsonnet
-        image: buildbarn/bb-scheduler:20230213T172655Z-e0ae60c
+        image: ghcr.io/buildbarn/bb-scheduler:20230703T140711Z-7d7f8a9
         name: scheduler
         resources:
           requests:
