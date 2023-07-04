@@ -82,20 +82,22 @@ llvm_toolchain(
     llvm_version = "14.0.0",
 )
 
+# [Gus]: Use internal rules_cc/toolchains. External rules_cc doesn't support darwin_arm64.
+#
 # C++ rules for Bazel.
-http_archive(
-    name = "rules_cc",
-    sha256 = "fe1e7b1801a63e79eb1b40dc44bf0590117a399e118ac44afd6fa07bf63e9ece",
-    strip_prefix = "rules_cc-58f8e026c00a8a20767e3dc669f46ba23bc93bdb",
-    urls = ["https://github.com/bazelbuild/rules_cc/archive/58f8e026c00a8a20767e3dc669f46ba23bc93bdb.zip"],
-)
+#http_archive(
+#    name = "rules_cc",
+#    sha256 = "fe1e7b1801a63e79eb1b40dc44bf0590117a399e118ac44afd6fa07bf63e9ece",
+#    strip_prefix = "rules_cc-58f8e026c00a8a20767e3dc669f46ba23bc93bdb",
+#    urls = ["https://github.com/bazelbuild/rules_cc/archive/58f8e026c00a8a20767e3dc669f46ba23bc93bdb.zip"],
+#)
 
 # Register the auto configured rules_cc toolchain for local execution.
-load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies", "rules_cc_toolchains")
+#load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies", "rules_cc_toolchains")
 
-rules_cc_dependencies()
+#rules_cc_dependencies()
 
-rules_cc_toolchains()
+#rules_cc_toolchains()
 
 # Import toolchain repositories for remote executions, but register the
 # toolchains using --extra_toolchains on the command line to get precedence.
