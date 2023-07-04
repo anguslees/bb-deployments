@@ -3,7 +3,6 @@ data:
   worker-ubuntu22-04.jsonnet: |
     local common = import 'common.libsonnet';
 
-    local fuseDirectory = '/fuse';
     local kiB = 1024;
     local MiB = 1024 * kiB;
     local GiB = 1024 * MiB;
@@ -73,7 +72,7 @@ data:
           maximumExecutionTimeoutCompensation: '3600s',
           shuffleDirectoryListings: true,
           mount: {
-            mountPath: fuseDirectory,
+            mountPath: '/build',
             fuse: {
               directoryEntryValidity: '300s',
               inodeAttributeValidity: '300s',

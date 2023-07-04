@@ -37,7 +37,7 @@ spec:
           name: storage-cas
         - mountPath: /storage-filepool
           name: storage-filepool
-        - mountPath: /fuse
+        - mountPath: /build
           name: fuse
           # Required to 'publish' the fuse mount to other containers (and host)
           mountPropagation: Bidirectional
