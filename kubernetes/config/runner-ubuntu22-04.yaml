@@ -4,7 +4,7 @@ data:
     local common = import 'common.libsonnet';
 
     {
-      buildDirectoryPath: '/worker/build',
+      buildDirectoryPath: '/build',
       # global: common.global,
       grpcServers: [{
         listenPaths: ['/worker/runner'],

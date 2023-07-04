@@ -33,14 +33,33 @@ spec:
           readOnly: true
         - mountPath: /worker
           name: worker
+        - mountPath: /storage-cas
+          name: storage-cas
+        - mountPath: /storage-filepool
+          name: storage-filepool
+        - mountPath: /fuse
+          name: fuse
+          # Required to 'publish' the fuse mount to other containers (and host)
+          mountPropagation: Bidirectional
+          subPathExpr: $(POD_UID)
+        - mountPath: /dev/fuse
+          name: fusedev
         ports:
         - name: metrics
           containerPort: 9980
           protocol: TCP
         resources:
           requests:
-            cpu: 100m
+            cpu: 1000m
             memory: 256Mi
+            ephemeral-storage: 10Gi
+        securityContext:
+          # Required for mountPropagation=Bidirectional
+          privileged: true
+          capabilities:
+            add:
+              # For fuse mount()
+              - SYS_ADMIN
         env:
         - name: NODE_NAME
           valueFrom:
@@ -50,6 +69,16 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: POD_UID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.uid
+        startupProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9980
+          failureThreshold: 20
+          periodSeconds: 30
       - command: [/bb/tini, -v, --, /bb/bb_runner, /config/runner-ubuntu22-04.jsonnet]
         image: ghcr.io/catthehacker/ubuntu:act-22.04@sha256:5f9c35c25db1d51a8ddaae5c0ba8d3c163c5e9a4a6cc97acd409ac7eae239448
         name: runner
@@ -64,6 +93,11 @@ spec:
             # TODO(gus): be able to spill into swap, rather than oom.
             cpu: 1000m
             memory: 3Gi
+        env:
+        - name: POD_UID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.uid
         volumeMounts:
         - mountPath: /config/
           name: configs
@@ -73,6 +107,11 @@ spec:
         - mountPath: /bb
           name: bb-runner
           readOnly: true
+        - mountPath: /build
+          name: fuse
+          subPathExpr: $(POD_UID)
+          # Required to consume mounts that arrive after ns created
+          mountPropagation: HostToContainer
       initContainers:
       - name: bb-runner-installer
         image: ghcr.io/buildbarn/bb-runner-installer:20230703T140711Z-7d7f8a9
@@ -83,11 +122,23 @@ spec:
         image: public.ecr.aws/docker/library/busybox:1.36.1-uclibc
         command:
         - sh
+        - -xe
         - -c
-        - mkdir -pm 0777 /worker/build && mkdir -pm 0700 /worker/cache && chmod 0777 /worker
+        - |-
+          mkdir -pm 0777 /storage-cas/persistent_state /fuse/$POD_UID;
+          chmod 0777 /worker
+        env:
+        - name: POD_UID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.uid
         volumeMounts:
         - mountPath: /worker
           name: worker
+        - mountPath: /fuse
+          name: fuse
+        - mountPath: /storage-cas
+          name: storage-cas
       volumes:
       - name: bb-runner
         emptyDir: {}
@@ -111,6 +162,21 @@ spec:
                 path: common.libsonnet
       - emptyDir: {}
         name: worker
+      - emptyDir: {}
+        name: storage-cas
+      - emptyDir: {}
+        name: storage-filepool
+      - name: fuse
+        # https://github.com/kubernetes/kubernetes/issues/7890#issuecomment-1570824211
+        # NB: currently we share this hostPath between all workers on the same node, and rely on
+        # `subPathExpr: $(POD_UID)` to disambiguate.
+        hostPath:
+          path: /mnt/fuse
+          type: DirectoryOrCreate
+      - name: fusedev
+        hostPath:
+          path: /dev/fuse
+          type: CharDevice
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
