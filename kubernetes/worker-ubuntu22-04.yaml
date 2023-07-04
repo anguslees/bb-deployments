@@ -205,7 +205,8 @@ spec:
     kind: Deployment
     name: worker-ubuntu22-04
   minReplicas: 1
-  maxReplicas: 100
+  # 10 is about the max the default burner quota can handle
+  maxReplicas: 10
   metrics:
   - type: Resource
     resource:
