@@ -15,33 +15,11 @@ data:
                 hashInitialization: 11946695773637837490,
                 shards: [
                   {
-                    backend: {
-                      mirrored: {
-                        backendA: { grpc: { address: 'storage-0-0.storage.buildbarn:8981' } },
-                        backendB: { grpc: { address: 'storage-0-1.storage.buildbarn:8981' } },
-                        replicatorAToB: {
-                          remote: { address: 'replicator-0-0-to-0-1.buildbarn:8984' },
-                        },
-                        replicatorBToA: {
-                          remote: { address: 'replicator-0-1-to-0-0.buildbarn:8984' },
-                        },
-                      },
-                    },
+                    backend: { grpc: { address: 'storage-0.storage.buildbarn:8981' } },
                     weight: 1,
                   },
                   {
-                    backend: {
-                      mirrored: {
-                        backendA: { grpc: { address: 'storage-1-0.storage.buildbarn:8981' } },
-                        backendB: { grpc: { address: 'storage-1-1.storage.buildbarn:8981' } },
-                        replicatorAToB: {
-                          remote: { address: 'replicator-1-0-to-1-1.buildbarn:8984' },
-                        },
-                        replicatorBToA: {
-                          remote: { address: 'replicator-1-1-to-1-0.buildbarn:8984' },
-                        },
-                      },
-                    },
+                    backend: { grpc: { address: 'storage-1.storage.buildbarn:8981' } },
                     weight: 1,
                   },
                 ],
@@ -56,25 +34,11 @@ data:
                 hashInitialization: 14897363947481274433,
                 shards: [
                   {
-                    backend: {
-                      mirrored: {
-                        backendA: { grpc: { address: 'storage-0-0.storage.buildbarn:8981' } },
-                        backendB: { grpc: { address: 'storage-0-1.storage.buildbarn:8981' } },
-                        replicatorAToB: { 'local': {} },
-                        replicatorBToA: { 'local': {} },
-                      },
-                    },
+                    backend: { grpc: { address: 'storage-0.storage.buildbarn:8981' } },
                     weight: 1,
                   },
                   {
-                    backend: {
-                      mirrored: {
-                        backendA: { grpc: { address: 'storage-1-0.storage.buildbarn:8981' } },
-                        backendB: { grpc: { address: 'storage-1-1.storage.buildbarn:8981' } },
-                        replicatorAToB: { 'local': {} },
-                        replicatorBToA: { 'local': {} },
-                      },
-                    },
+                    backend: { grpc: { address: 'storage-1.storage.buildbarn:8981' } },
                     weight: 1,
                   },
                 ],
