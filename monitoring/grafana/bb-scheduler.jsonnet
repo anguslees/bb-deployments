@@ -1,5 +1,17 @@
 local simpledash = import 'monitoring/grafana/simpledash.libsonnet';
 
+local prettifyPlatform(expr) =
+  local numReplacements = 5;
+  (
+    // Replace '{"name":"foo","value":"bar"}' with 'foo=bar' numReplacements times.
+    // '{"name":"foo"}' is replaced with 'foo='.
+    // The first call strips '{"properties":[' from the start and ']}' from the end,
+    // the other calls strip the comma that is separating each field.
+    std.repeat('label_replace(', numReplacements) + '\n' + expr +
+    '\n,"platform","$1=$3$4","platform",\'{"properties":\\\\[{"name":"([^"]*)"(,"value":"([^"]*)")?}(.*)]}\')' +
+    std.repeat('\n,"platform","$1 $2=$4$5","platform",\'(.*),{"name":"([^"]*)"(,"value":"([^"]*)")?}(.*)\')', numReplacements - 1)
+  );
+
 simpledash.dashboard(
   title='BB Scheduler',
   templates=[
@@ -9,17 +21,18 @@ simpledash.dashboard(
       label='Instance name',
       selectionStyle=simpledash.selectMultiple,
     ),
-    // TODO: Make it possible to filter the dashboard by platform. This
-    // doesn't work right now, as Grafana doesn't escape double quotes
-    // in regex patterns properly.
-    /*
+    // Platform properties contains double quotes, so the regex patterns
+    // need to be single quoted as Grafana doesn't escape double quotes
+    // in regex patterns properly. Therefore, to be explicit,
+    // `platform=~\'$platform\'` is used in the expressions below.
     simpledash.template(
       name='platform',
-      query='label_values(instance_name_prefix_platform:buildbarn_builder_in_memory_build_queue_tasks_queued:irate1m, platform)',
+      query='label_values(instance_name_prefix_platform_size_class:buildbarn_builder_in_memory_build_queue_tasks_queued:irate1m, platform)',
+      // Strip the '{"properties":' part as that exists in all the entries.
+      regex='/(?<value>{"properties":\\[(?<text>.*)\\]})/',
       label='Platform',
       selectionStyle=simpledash.selectMultiple,
     ),
-    */
   ],
   aggregationPeriods=null,
   rows=[
@@ -34,8 +47,8 @@ simpledash.dashboard(
           unit=simpledash.unitOperationsPerSecond,
           targets=[
             simpledash.graphTarget(
-              expr='instance_name_prefix_platform_size_class:buildbarn_builder_in_memory_build_queue_tasks_queued:irate1m{instance_name_prefix=~"$instance_name_prefix"}',
-              legendFormat='{{instance_name_prefix}} {{platform}} {{size_class}}',
+              expr=prettifyPlatform('instance_name_prefix_platform_size_class:buildbarn_builder_in_memory_build_queue_tasks_queued:irate1m{instance_name_prefix=~"$instance_name_prefix",platform=~\'$platform\'}'),
+              legendFormat='{{instance_name_prefix}} [{{platform}}] {{size_class}}',
             ),
           ],
         ),
@@ -46,8 +59,8 @@ simpledash.dashboard(
           unit=simpledash.unitOperationsPerSecond,
           targets=[
             simpledash.graphTarget(
-              expr='instance_name_prefix_platform_size_class:buildbarn_builder_in_memory_build_queue_tasks_executing:irate1m{instance_name_prefix=~"$instance_name_prefix"}',
-              legendFormat='{{instance_name_prefix}} {{platform}} {{size_class}}',
+              expr=prettifyPlatform('instance_name_prefix_platform_size_class:buildbarn_builder_in_memory_build_queue_tasks_executing:irate1m{instance_name_prefix=~"$instance_name_prefix",platform=~\'$platform\'}'),
+              legendFormat='{{instance_name_prefix}} [{{platform}}] {{size_class}}',
             ),
           ],
         ),
@@ -58,8 +71,8 @@ simpledash.dashboard(
           unit=simpledash.unitOperationsPerSecond,
           targets=[
             simpledash.graphTarget(
-              expr='grpc_code_instance_name_prefix_platform_result_size_class:buildbarn_builder_in_memory_build_queue_tasks_completed:irate1m{instance_name_prefix=~"$instance_name_prefix"}',
-              legendFormat='{{instance_name_prefix}} {{platform}} {{size_class}} {{result}} {{grpc_code}}',
+              expr=prettifyPlatform('grpc_code_instance_name_prefix_platform_result_size_class:buildbarn_builder_in_memory_build_queue_tasks_completed:irate1m{instance_name_prefix=~"$instance_name_prefix",platform=~\'$platform\'}'),
+              legendFormat='{{instance_name_prefix}} [{{platform}}] {{size_class}} {{result}} {{grpc_code}}',
             ),
           ],
         ),
@@ -70,8 +83,8 @@ simpledash.dashboard(
           unit=simpledash.unitOperationsPerSecond,
           targets=[
             simpledash.graphTarget(
-              expr='instance_name_prefix_platform_size_class:buildbarn_builder_in_memory_build_queue_tasks_removed:irate1m{instance_name_prefix=~"$instance_name_prefix"}',
-              legendFormat='{{instance_name_prefix}} {{platform}} {{size_class}}',
+              expr=prettifyPlatform('instance_name_prefix_platform_size_class:buildbarn_builder_in_memory_build_queue_tasks_removed:irate1m{instance_name_prefix=~"$instance_name_prefix",platform=~\'$platform\'}'),
+              legendFormat='{{instance_name_prefix}} [{{platform}}] {{size_class}}',
             ),
           ],
         ),
@@ -89,8 +102,8 @@ simpledash.dashboard(
           unit=simpledash.unitNone,
           targets=[
             simpledash.graphTarget(
-              expr='instance_name_prefix_platform_size_class:buildbarn_builder_in_memory_build_queue_tasks_%s:sum{instance_name_prefix=~"$instance_name_prefix"}' % std.asciiLower(stage),
-              legendFormat='{{instance_name_prefix}} {{platform}} {{size_class}}',
+              expr=prettifyPlatform('instance_name_prefix_platform_size_class:buildbarn_builder_in_memory_build_queue_tasks_%s:sum{instance_name_prefix=~"$instance_name_prefix",platform=~\'$platform\'}' % std.asciiLower(stage)),
+              legendFormat='{{instance_name_prefix}} [{{platform}}] {{size_class}}',
             ),
           ],
         )
@@ -108,7 +121,7 @@ simpledash.dashboard(
           unit=simpledash.unitDurationSeconds,
           targets=[
             simpledash.heatmapTarget(
-              expr='sum(instance_name_prefix_le_platform_size_class:buildbarn_builder_in_memory_build_queue_tasks_%s_duration_seconds_bucket:irate1m{instance_name_prefix=~"$instance_name_prefix"}) by (le)' % std.asciiLower(stage),
+              expr='sum(instance_name_prefix_le_platform_size_class:buildbarn_builder_in_memory_build_queue_tasks_%s_duration_seconds_bucket:irate1m{instance_name_prefix=~"$instance_name_prefix",platform=~\'$platform\'}) by (le)' % std.asciiLower(stage),
             ),
           ],
         )
@@ -125,7 +138,7 @@ simpledash.dashboard(
           unit=simpledash.unitNone,
           targets=[
             simpledash.heatmapTarget(
-              expr='sum(instance_name_prefix_le_platform_size_class:buildbarn_builder_in_memory_build_queue_tasks_executing_retries_bucket:irate1m{instance_name_prefix=~"$instance_name_prefix"}) by (le)',
+              expr='sum(instance_name_prefix_le_platform_size_class:buildbarn_builder_in_memory_build_queue_tasks_executing_retries_bucket:irate1m{instance_name_prefix=~"$instance_name_prefix",platform=~\'$platform\'}) by (le)',
             ),
           ],
         ),
