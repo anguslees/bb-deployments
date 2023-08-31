@@ -51,7 +51,7 @@ data:
       //browserUrl: 'http://bb-browser.example.com:80',
       browserUrl: 'https://bb-browser.%zone%',
       httpListenAddress: ':80',
-      maximumMessageSizeBytes: 16 * 1024 * 1024,
+      maximumMessageSizeBytes: 64 * 1024 * 1024,
       global: {
         diagnosticsHttpServer: {
           listenAddress: ':9980',

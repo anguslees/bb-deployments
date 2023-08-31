@@ -51,7 +51,7 @@ spec:
         resources:
           requests:
             cpu: 1000m
-            memory: 256Mi
+            memory: 512Mi
             ephemeral-storage: 10Gi
         securityContext:
           # Required for mountPropagation=Bidirectional

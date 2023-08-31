@@ -89,7 +89,7 @@ data:
           // Invalid Argument: I/O error while running command: Failed to write to file at offset 1073741824: File size quota reached
           assert 1073741824 < self.maximumFilePoolSizeBytes,
 
-          maximumFilePoolFileCount: 10000,
+          maximumFilePoolFileCount: 50000,
           maximumFilePoolSizeBytes: 3 * GiB,
           platform: {
             properties: [
